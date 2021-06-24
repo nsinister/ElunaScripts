@@ -49,6 +49,8 @@ local Qualities =
     [7]  = true , -- AllowHeirloom
 }
 
+local ENTRY_SLOT_HIDDEN = 0
+
 local EQUIPMENT_SLOT_START        = 0
 local EQUIPMENT_SLOT_HEAD         = 0
 local EQUIPMENT_SLOT_NECK         = 1
@@ -142,6 +144,7 @@ local Locales = {
     {"Equipment slot is empty", nil, nil, nil, nil, nil, nil, nil, nil},
     {"You don't have enough %ss", nil, nil, nil, nil, nil, nil, nil, nil},
     {"Not enough money", nil, nil, nil, nil, nil, nil, nil, nil},
+    {"Hide slot", nil, nil, nil, nil, nil, nil, nil, nil},
 }
 local function LocText(id, p) -- "%s":format("test")
     if Locales[id] then
@@ -391,6 +394,9 @@ local function OnGossipSelect(event, player, creature, slotid, uiAction)
                 end
             end
 
+            -- Hide slot option
+            player:GossipMenuAddItem(7, LocText(18, player), EQUIPMENT_SLOT_END+4, uiAction)
+            
             player:GossipMenuAddItem(4, LocText(7, player), EQUIPMENT_SLOT_END+3, uiAction, false, LocText(5, player):format(GetSlotName(uiAction, player:GetDbcLocale())))
             player:GossipMenuAddItem(7, LocText(6, player), EQUIPMENT_SLOT_END+1, 0)
             player:GossipSendMenu(100, creature, menu_id)
@@ -427,6 +433,10 @@ local function OnGossipSelect(event, player, creature, slotid, uiAction)
             end
         end
         OnGossipSelect(event, player, creature, EQUIPMENT_SLOT_END, uiAction)
+    elseif slotid == EQUIPMENT_SLOT_END+4 then -- Hide slot
+        local transmogrified = player:GetItemByPos(INVENTORY_SLOT_BAG_0, uiAction)
+        SetFakeEntry(transmogrified, ENTRY_SLOT_HIDDEN)
+        OnGossipSelect(event, player, creature, EQUIPMENT_SLOT_END, uiAction)        
     else -- Transmogrify
         local lowGUID = player:GetGUIDLow()
         if not RequireToken or player:GetItemCount(TokenEntry) >= TokenAmount then
